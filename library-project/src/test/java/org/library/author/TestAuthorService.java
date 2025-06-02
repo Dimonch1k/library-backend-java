@@ -1,22 +1,18 @@
 package org.library.author;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.library.author.dto.CreateAuthorDto;
+import org.library.author.dto.UpdateAuthorDto;
 import org.library.author.model.Author;
-import org.mockito.AdditionalAnswers;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
-import static org.
+import org.mockito.*;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
-@SpringBootTest
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 public class TestAuthorService
 {
   private AuthorService    authorService;
@@ -27,7 +23,6 @@ public class TestAuthorService
   @BeforeEach
   void setUp() {
     autoCloseable = MockitoAnnotations.openMocks( this );
-
     authorService = new AuthorService( authorRepository );
   }
 
@@ -37,29 +32,262 @@ public class TestAuthorService
   }
 
   @Test
-  public void testCreate() {
-    UUID authorId = UUID.randomUUID();
+  public void testCreate_Success() {
+    CreateAuthorDto createDto = new CreateAuthorDto();
+    createDto.setFirstName( "Dmytro" );
+    createDto.setLastName( "Leskiv" );
+    createDto.setAge( 25 );
 
-    Author author = Author.builder()
-                          .id( authorId )
-                          .firstName( "Dmytro" )
-                          .lastName( "Leskiv" )
-                          .age( 16 )
-                          .build();
+    when( authorRepository.findByFirstNameAndLastName(
+      "Dmytro",
+      "Leskiv"
+    ) ).thenReturn( Optional.empty() );
 
-    Author expectedAuthor = Author.builder()
-                                  .id( authorId )
-                                  .firstName( "Dmytro" )
-                                  .lastName( "Leskiv" )
-                                  .age( 16 )
-                                  .build();
+    when( authorRepository.save( any( Author.class ) ) ).thenAnswer( invocation -> {
+      Author a = invocation.getArgument( 0 );
+      a.setId( UUID.randomUUID() );
+      return a;
+    } );
 
-    Mockito.when( authorRepository.findById( authorId ) )
-           .thenReturn( Optional.of( new Author() ) );
+    Author created = authorService.create( createDto );
 
-    Mockito.when( Mockito.any( Author.class ) )
-           .thenReturn( (Author) AdditionalAnswers.returnsFirstArg() );
+    assertNotNull( created.getId() );
+    assertNull( created.getCreatedAt() ); // Because it's not mocked
+    assertNull( created.getUpdatedAt() ); // Because it's not mocked
 
-
+    assertEquals(
+      "Dmytro",
+      created.getFirstName()
+    );
+    assertEquals(
+      "Leskiv",
+      created.getLastName()
+    );
+    assertEquals(
+      25,
+      created.getAge()
+    );
+    assertNotNull( created.getId() );
   }
+
+  @Test
+  public void testCreate_Duplicate_ThrowsConflict() {
+    CreateAuthorDto dto = new CreateAuthorDto();
+    dto.setFirstName( "John" );
+    dto.setLastName( "Doe" );
+    dto.setAge( 30 );
+
+    when( authorRepository.findByFirstNameAndLastName(
+      "John",
+      "Doe"
+    ) ).thenReturn( Optional.of( new Author() ) );
+
+    ResponseStatusException ex = assertThrows(
+      ResponseStatusException.class,
+      () -> {
+        authorService.create( dto );
+      }
+    );
+
+    assertEquals(
+      409,
+      ex.getStatusCode().value()
+    );
+    assertTrue( ex.getReason().contains( "already exists" ) );
+  }
+
+  @Test
+  public void testGetAll_ReturnsList() {
+    List<Author> authors = List.of(
+      this.buildAuthor(
+        UUID.randomUUID(),
+        "A",
+        "B",
+        20
+      ),
+      this.buildAuthor(
+        UUID.randomUUID(),
+        "C",
+        "D",
+        30
+      )
+    );
+
+    when( authorRepository.findAll() ).thenReturn( authors );
+
+    List<Author> result = authorService.getAll();
+    assertEquals(
+      2,
+      result.size()
+    );
+  }
+
+  @Test
+  public void testGetById_Success() {
+    UUID id = UUID.randomUUID();
+    Author author = this.buildAuthor(
+      id,
+      "A",
+      "B",
+      40
+    );
+
+    when( authorRepository.findById( id ) ).thenReturn( Optional.of( author ) );
+
+    Author result = authorService.getById( id );
+
+    assertEquals(
+      "A",
+      result.getFirstName()
+    );
+    assertEquals(
+      "B",
+      result.getLastName()
+    );
+  }
+
+  @Test
+  public void testGetById_NotFound() {
+    UUID id = UUID.randomUUID();
+
+    when( authorRepository.findById( id ) ).thenReturn( Optional.empty() );
+
+    ResponseStatusException ex = assertThrows(
+      ResponseStatusException.class,
+      () -> {
+        authorService.getById( id );
+      }
+    );
+
+    assertEquals(
+      404,
+      ex.getStatusCode().value()
+    );
+    assertTrue( ex.getReason().contains( "Author not found" ) );
+  }
+
+  @Test
+  public void testUpdate_Success() {
+    UUID id = UUID.randomUUID();
+    Author author = this.buildAuthor(
+      id,
+      "Old",
+      "Name",
+      30
+    );
+
+    UpdateAuthorDto dto = new UpdateAuthorDto();
+    dto.setFirstName( "New" );
+    dto.setAge( 35 );
+
+    when( authorRepository.findById( id ) ).thenReturn( Optional.of( author ) );
+    when( authorRepository.save( any( Author.class ) ) ).thenAnswer( i -> i.getArgument( 0 ) );
+
+    Author updated = authorService.update(
+      id,
+      dto
+    );
+
+    assertEquals(
+      "New",
+      updated.getFirstName()
+    );
+    assertEquals(
+      "Name",
+      updated.getLastName()
+    ); // unchanged
+    assertEquals(
+      35,
+      updated.getAge()
+    );
+  }
+
+  @Test
+  public void testUpdate_NotFound() {
+    UUID id = UUID.randomUUID();
+    UpdateAuthorDto dto = new UpdateAuthorDto();
+    dto.setFirstName( "Test" );
+
+    when( authorRepository.findById( id ) ).thenReturn( Optional.empty() );
+
+    assertThrows(
+      ResponseStatusException.class,
+      () -> authorService.update(
+        id,
+        dto
+      )
+    );
+  }
+
+  @Test
+  public void testDelete_Success() {
+    UUID id = UUID.randomUUID();
+    Author author = this.buildAuthor(
+      id,
+      "A",
+      "B",
+      20
+    );
+
+    when( authorRepository.findById( id ) ).thenReturn( Optional.of( author ) );
+    doNothing().when( authorRepository ).delete( author );
+
+    assertDoesNotThrow( () -> authorService.delete( id ) );
+    verify(
+      authorRepository,
+      times( 1 )
+    ).delete( author );
+  }
+
+  @Test
+  public void testDelete_NotFound() {
+    UUID id = UUID.randomUUID();
+
+    when( authorRepository.findById( id ) ).thenReturn( Optional.empty() );
+
+    assertThrows(
+      ResponseStatusException.class,
+      () -> authorService.delete( id )
+    );
+  }
+
+  @Test
+  public void testCreate_DataIntegrityViolation() {
+    CreateAuthorDto dto = new CreateAuthorDto();
+    dto.setFirstName( "A" );
+    dto.setLastName( "B" );
+    dto.setAge( 45 );
+
+    when( authorRepository.findByFirstNameAndLastName(
+      any(),
+      any()
+    ) ).thenReturn( Optional.empty() );
+    when( authorRepository.save( any() ) ).thenThrow( new DataIntegrityViolationException( "" ) );
+
+    ResponseStatusException ex = assertThrows(
+      ResponseStatusException.class,
+      () -> authorService.create( dto )
+    );
+
+    assertEquals(
+      400,
+      ex.getStatusCode().value()
+    );
+    assertEquals(
+      "Failed to create author",
+      ex.getReason()
+    );
+  }
+
+  private Author buildAuthor(
+    UUID id, String firstName, String lastName, int age )
+  {
+    return Author.builder()
+                 .id( id )
+                 .firstName( firstName )
+                 .lastName( lastName )
+                 .age( age )
+                 .build();
+  }
+
 }
