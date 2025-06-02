@@ -1,0 +1,17 @@
+package org.library.author.dto;
+
+public class AuthorDto
+{
+  @Id
+  @GeneratedValue( strategy = GenerationType.UUID )
+  private String id;
+
+  @Column(name = "first_name", nullable = false )
+  private String firstName;
+
+  @Column(name = "last_name", nullable = false )
+  private String lastName;
+
+  @Column( nullable = false )
+  private int    age;
+}

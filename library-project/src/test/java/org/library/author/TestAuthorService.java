@@ -1,0 +1,65 @@
+package org.library.author;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.library.author.dto.CreateAuthorDto;
+import org.library.author.model.Author;
+import org.mockito.AdditionalAnswers;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.SpringBootTest;
+import static org.
+
+import java.util.Optional;
+import java.util.UUID;
+
+@SpringBootTest
+public class TestAuthorService
+{
+  private AuthorService    authorService;
+  @Mock
+  private AuthorRepository authorRepository;
+  private AutoCloseable    autoCloseable;
+
+  @BeforeEach
+  void setUp() {
+    autoCloseable = MockitoAnnotations.openMocks( this );
+
+    authorService = new AuthorService( authorRepository );
+  }
+
+  @AfterEach
+  void tearDown() throws Exception {
+    autoCloseable.close();
+  }
+
+  @Test
+  public void testCreate() {
+    UUID authorId = UUID.randomUUID();
+
+    Author author = Author.builder()
+                          .id( authorId )
+                          .firstName( "Dmytro" )
+                          .lastName( "Leskiv" )
+                          .age( 16 )
+                          .build();
+
+    Author expectedAuthor = Author.builder()
+                                  .id( authorId )
+                                  .firstName( "Dmytro" )
+                                  .lastName( "Leskiv" )
+                                  .age( 16 )
+                                  .build();
+
+    Mockito.when( authorRepository.findById( authorId ) )
+           .thenReturn( Optional.of( new Author() ) );
+
+    Mockito.when( Mockito.any( Author.class ) )
+           .thenReturn( (Author) AdditionalAnswers.returnsFirstArg() );
+
+
+  }
+}

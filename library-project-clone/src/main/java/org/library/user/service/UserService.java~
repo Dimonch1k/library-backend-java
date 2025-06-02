@@ -1,0 +1,56 @@
+package org.library.user.service;
+
+import lombok.RequiredArgsConstructor;
+import org.library.user.dto.UserDto;
+import org.library.user.model.User;
+import org.library.user.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class UserService
+{
+  private final UserRepository  userRepository;
+  private final PasswordEncoder passwordEncoder;
+
+  public User getById( String id ) {
+    return userRepository.findById( id )
+                         .orElseThrow( () -> new RuntimeException( "User not found" ) );
+  }
+
+  public User getByEmail( String email ) {
+    return userRepository.findByEmail( email )
+                         .orElseThrow( () -> new RuntimeException( "User not found" ) );
+  }
+
+  public User create( UserDto dto ) {
+    if ( userRepository.existsByEmail( dto.getEmail() ) ) {
+      throw new RuntimeException( "Email already in use" );
+    }
+
+    User user = User.builder()
+                    .email( dto.getEmail() )
+                    .password( passwordEncoder.encode( dto.getPassword() ) )
+                    .role( org.library.auth.model.Role.USER )
+                    .build();
+
+    return userRepository.save( user );
+  }
+
+  public User update( String id, UserDto dto ) {
+    User user = getById( id );
+
+    if ( dto.getEmail() != null ) {
+      user.setEmail( dto.getEmail() );
+    }
+
+    if ( dto.getPassword() != null && !dto.getPassword().isEmpty() ) {
+      user.setPassword( passwordEncoder.encode( dto.getPassword() ) );
+    }
+
+    return userRepository.save( user );
+  }
+}

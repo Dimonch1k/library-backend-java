@@ -1,0 +1,4 @@
+package org.library.author;
+
+public class AuthorRepository
+{}
