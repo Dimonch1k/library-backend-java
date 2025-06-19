@@ -17,10 +17,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Table( name = "author" )
-public class Author
-{
+public class Author {
   @Id
-  private UUID    id;
+  private UUID id;
   @CreationTimestamp
   @Column( name = "created_at", nullable = false, updatable = false )
   private Instant createdAt;
@@ -28,16 +27,16 @@ public class Author
   @Column( name = "updated_at", nullable = false )
   private Instant updatedAt;
   @Column( name = "first_name", nullable = false )
-  private String  firstName;
+  private String firstName;
   @Column( name = "last_name", nullable = false )
-  private String  lastName;
+  private String lastName;
   @Column( nullable = false )
-  private int     age;
+  private int age;
 
-  public Author(UUID id, String firstName, String lastName, int age) {
+  public Author ( UUID id, String firstName, String lastName, int age ) {
     this.id = id;
     this.firstName = firstName;
     this.lastName = lastName;
     this.age = age;
   }
-}
+};
