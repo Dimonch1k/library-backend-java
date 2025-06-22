@@ -1,6 +1,7 @@
 package org.library.author;
 
 import org.junit.jupiter.api.*;
+import org.library.author.dto.AuthorResponseDto;
 import org.library.author.dto.CreateAuthorDto;
 import org.library.author.dto.UpdateAuthorDto;
 import org.library.author.model.Author;
@@ -13,26 +14,25 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class TestAuthorService
-{
-  private AuthorService    authorService;
+public class TestAuthorService {
+  private AuthorService authorService;
   @Mock
   private AuthorRepository authorRepository;
-  private AutoCloseable    autoCloseable;
+  private AutoCloseable autoCloseable;
 
   @BeforeEach
-  void setUp() {
+  void setUp () {
     autoCloseable = MockitoAnnotations.openMocks( this );
     authorService = new AuthorService( authorRepository );
   }
 
   @AfterEach
-  void tearDown() throws Exception {
+  void tearDown () throws Exception {
     autoCloseable.close();
   }
 
   @Test
-  public void testCreate_Success() {
+  public void testCreate_Success () {
     CreateAuthorDto createDto = new CreateAuthorDto();
     createDto.setFirstName( "Dmytro" );
     createDto.setLastName( "Leskiv" );
@@ -49,11 +49,9 @@ public class TestAuthorService
       return a;
     } );
 
-    Author created = authorService.create( createDto );
+    AuthorResponseDto created = authorService.create( createDto );
 
     assertNotNull( created.getId() );
-    assertNull( created.getCreatedAt() ); // Because it's not mocked
-    assertNull( created.getUpdatedAt() ); // Because it's not mocked
 
     assertEquals(
       "Dmytro",
@@ -71,7 +69,7 @@ public class TestAuthorService
   }
 
   @Test
-  public void testCreate_Duplicate_ThrowsConflict() {
+  public void testCreate_Duplicate_ThrowsConflict () {
     CreateAuthorDto dto = new CreateAuthorDto();
     dto.setFirstName( "John" );
     dto.setLastName( "Doe" );
@@ -97,7 +95,7 @@ public class TestAuthorService
   }
 
   @Test
-  public void testGetAll_ReturnsList() {
+  public void testGetAll_ReturnsList () {
     List<Author> authors = List.of(
       this.buildAuthor(
         UUID.randomUUID(),
@@ -115,7 +113,7 @@ public class TestAuthorService
 
     when( authorRepository.findAll() ).thenReturn( authors );
 
-    List<Author> result = authorService.getAll();
+    List<AuthorResponseDto> result = authorService.getAll();
     assertEquals(
       2,
       result.size()
@@ -123,7 +121,7 @@ public class TestAuthorService
   }
 
   @Test
-  public void testGetById_Success() {
+  public void testGetById_Success () {
     UUID id = UUID.randomUUID();
     Author author = this.buildAuthor(
       id,
@@ -134,7 +132,7 @@ public class TestAuthorService
 
     when( authorRepository.findById( id ) ).thenReturn( Optional.of( author ) );
 
-    Author result = authorService.getById( id );
+    AuthorResponseDto result = authorService.getById( id );
 
     assertEquals(
       "A",
@@ -147,7 +145,7 @@ public class TestAuthorService
   }
 
   @Test
-  public void testGetById_NotFound() {
+  public void testGetById_NotFound () {
     UUID id = UUID.randomUUID();
 
     when( authorRepository.findById( id ) ).thenReturn( Optional.empty() );
@@ -167,7 +165,7 @@ public class TestAuthorService
   }
 
   @Test
-  public void testUpdate_Success() {
+  public void testUpdate_Success () {
     UUID id = UUID.randomUUID();
     Author author = this.buildAuthor(
       id,
@@ -183,7 +181,7 @@ public class TestAuthorService
     when( authorRepository.findById( id ) ).thenReturn( Optional.of( author ) );
     when( authorRepository.save( any( Author.class ) ) ).thenAnswer( i -> i.getArgument( 0 ) );
 
-    Author updated = authorService.update(
+    AuthorResponseDto updated = authorService.update(
       id,
       dto
     );
@@ -203,7 +201,7 @@ public class TestAuthorService
   }
 
   @Test
-  public void testUpdate_NotFound() {
+  public void testUpdate_NotFound () {
     UUID id = UUID.randomUUID();
     UpdateAuthorDto dto = new UpdateAuthorDto();
     dto.setFirstName( "Test" );
@@ -220,7 +218,7 @@ public class TestAuthorService
   }
 
   @Test
-  public void testDelete_Success() {
+  public void testDelete_Success () {
     UUID id = UUID.randomUUID();
     Author author = this.buildAuthor(
       id,
@@ -240,7 +238,7 @@ public class TestAuthorService
   }
 
   @Test
-  public void testDelete_NotFound() {
+  public void testDelete_NotFound () {
     UUID id = UUID.randomUUID();
 
     when( authorRepository.findById( id ) ).thenReturn( Optional.empty() );
@@ -252,7 +250,7 @@ public class TestAuthorService
   }
 
   @Test
-  public void testCreate_DataIntegrityViolation() {
+  public void testCreate_DataIntegrityViolation () {
     CreateAuthorDto dto = new CreateAuthorDto();
     dto.setFirstName( "A" );
     dto.setLastName( "B" );
@@ -279,15 +277,9 @@ public class TestAuthorService
     );
   }
 
-  private Author buildAuthor(
-    UUID id, String firstName, String lastName, int age )
-  {
-    return Author.builder()
-                 .id( id )
-                 .firstName( firstName )
-                 .lastName( lastName )
-                 .age( age )
-                 .build();
+  private Author buildAuthor (
+    UUID id, String firstName, String lastName, int age
+  ) {
+    return Author.builder().id( id ).firstName( firstName ).lastName( lastName ).age( age ).build();
   }
-
 }

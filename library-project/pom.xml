@@ -64,10 +64,11 @@
     </dependency>
 
 
-    <!--        <dependency>-->
-    <!--            <groupId>org.springframework.boot</groupId>-->
-    <!--            <artifactId>spring-boot-starter-security</artifactId>-->
-    <!--        </dependency>-->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
     <!-- JWT -->
     <!--        <dependency>-->
     <!--            <groupId>io.jsonwebtoken</groupId>-->
@@ -94,6 +95,13 @@
       <version>42.7.3</version> <!-- Safe for PostgreSQL 17 -->
       <scope>runtime</scope>
     </dependency>
+    <!--    Oracle XE    -->
+    <dependency>
+      <groupId>com.oracle.database.jdbc</groupId>
+      <artifactId>ojdbc11</artifactId>
+      <version>21.9.0.0</version>
+    </dependency>
+
     <!--    Lombok    -->
     <dependency>
       <groupId>org.projectlombok</groupId>
