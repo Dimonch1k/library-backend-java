@@ -4,12 +4,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.library.auth.enums.Role;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table( name = "user" )
+@Table( name = "\"USER\"" )
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,5 +35,5 @@ public class User {
   private String password;
 
   @Column( nullable = false )
-  private String role;
+  private Role role;
 }

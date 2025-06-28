@@ -2,6 +2,7 @@ package org.library.user;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.library.auth.annotations.CurrentUser;
 import org.library.user.dto.UpdateUserDto;
 import org.library.user.dto.UserResponseDto;
 import org.springframework.http.ResponseEntity;
@@ -16,19 +17,19 @@ public class UserController {
 
   private final UserService userService;
 
-  @GetMapping( "/{id}" )
-  public ResponseEntity<UserResponseDto> getProfile ( @PathVariable UUID id ) {
-    return ResponseEntity.ok( userService.getProfile( id ) );
+  @GetMapping
+  public ResponseEntity<UserResponseDto> getProfile ( @CurrentUser UserResponseDto currentUser ) {
+    return ResponseEntity.ok( userService.getProfile( currentUser.getId() ) );
   }
 
-  @PatchMapping( "/{id}" )
+  @PatchMapping
   public ResponseEntity<UserResponseDto> updateProfile (
-    @PathVariable UUID id, @RequestBody @Valid UpdateUserDto dto
+    @CurrentUser UserResponseDto currentUser, @RequestBody @Valid UpdateUserDto dto
   ) {
-
     return ResponseEntity.ok( userService.update(
-      id,
+      currentUser.getId(),
       dto
     ) );
   }
 }
+

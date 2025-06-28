@@ -122,6 +122,15 @@ public class BookService {
     }
   }
 
+  public void checkBookExists(UUID bookId) {
+    if (!bookRepository.existsById(bookId)) {
+      throw new ResponseStatusException(
+        NOT_FOUND,
+        "Book not found with id: " + bookId
+      );
+    }
+  }
+
   private BookResponseDto toResponseDto ( Book book ) {
     return new BookResponseDto(
       book.getId(),
