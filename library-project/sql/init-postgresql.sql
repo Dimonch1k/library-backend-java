@@ -1,12 +1,12 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-DROP TABLE IF EXISTS image;
-DROP TABLE IF EXISTS author;
-DROP TABLE IF EXISTS book;
-DROP TABLE IF EXISTS "user";
-DROP TABLE IF EXISTS order_status;
 DROP TABLE IF EXISTS "order";
+DROP TYPE IF EXISTS order_status;
+DROP TABLE IF EXISTS "user";
+DROP TABLE IF EXISTS book;
+DROP TABLE IF EXISTS author;
+DROP TABLE IF EXISTS image;
 
 -- Table: image
 CREATE TABLE image
@@ -59,7 +59,7 @@ CREATE TABLE "user"
 );
 
 -- Enum: order_status
-CREATE TYPE order_status AS ENUM ('NEW', 'ACTIVE', 'RETURNED', 'CANCELLED');
+CREATE TYPE order_status AS ENUM ('ACTIVE', 'RETURNED', 'CANCELLED');
 
 -- Table: "order"
 CREATE TABLE "order"

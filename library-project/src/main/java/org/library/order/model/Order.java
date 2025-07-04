@@ -12,7 +12,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table( name = "\"ORDER\"" )
+@Table( name = "\"order\"" )
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,8 +37,8 @@ public class Order {
   @Column( name = "return_date" )
   private Instant returnDate;
 
-  @Enumerated( EnumType.STRING )
-  @Column( nullable = false )
+  @Enumerated(EnumType.STRING)
+  @Column(name = "status", nullable = false, columnDefinition = "order_status")
   private OrderStatus status;
 
   @ManyToOne

@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table( name = "BOOK" )
+@Table( name = "book" )
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

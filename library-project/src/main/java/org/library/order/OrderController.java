@@ -14,9 +14,9 @@ import java.util.UUID;
 public class OrderController {
   private final OrderService orderService;
 
-  @PostMapping( "/borrow/{bookId}" )
+  @PostMapping( "/borrow/{bookId}/user/{userId}" )
   @ResponseStatus( HttpStatus.OK )
-  public void borrowBook ( @RequestParam UUID userId, @PathVariable UUID bookId ) {
+  public void borrowBook ( @PathVariable UUID userId, @PathVariable UUID bookId ) {
     orderService.borrowBook(
       userId,
       bookId
@@ -40,8 +40,8 @@ public class OrderController {
     return orderService.getAllOrders();
   }
 
-  @GetMapping( "/my-orders" )
-  public List<OrderResponseDto> getOrdersByUser ( @RequestParam UUID userId ) {
+  @GetMapping( "/my-orders/user/{userId}" )
+  public List<OrderResponseDto> getOrdersByUser ( @PathVariable UUID userId ) {
     return orderService.getOrdersByUserId( userId );
   }
 
