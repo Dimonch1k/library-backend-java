@@ -1,4 +1,4 @@
--- Enable UUID extension
+-- Enable Long extension
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 DROP TABLE IF EXISTS "order";
@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS image;
 -- Table: image
 CREATE TABLE image
 (
-    id         UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
+    id         Long PRIMARY KEY     DEFAULT gen_random_uuid(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     name       TEXT        NOT NULL,
@@ -21,27 +21,27 @@ CREATE TABLE image
 -- Table: author
 CREATE TABLE author
 (
-    id         UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
+    id         Long PRIMARY KEY     DEFAULT gen_random_uuid(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     first_name TEXT        NOT NULL,
     last_name  TEXT        NOT NULL,
     age        INTEGER     NOT NULL
---     image_id   UUID UNIQUE,
+--     image_id   Long UNIQUE,
 --     CONSTRAINT fk_author_image FOREIGN KEY (image_id) REFERENCES image (id) ON DELETE SET NULL
 );
 
 -- Table: book
 CREATE TABLE book
 (
-    id          UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
+    id          Long PRIMARY KEY     DEFAULT gen_random_uuid(),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     title       TEXT        NOT NULL,
     description TEXT,
     genre       TEXT        NOT NULL,
     year        INTEGER     NOT NULL,
-    image_id    UUID UNIQUE,
+    image_id    Long UNIQUE,
     author_id   UUID,
     CONSTRAINT fk_book_image FOREIGN KEY (image_id) REFERENCES image (id) ON DELETE SET NULL,
     CONSTRAINT fk_book_author FOREIGN KEY (author_id) REFERENCES author (id) ON DELETE SET NULL
@@ -50,7 +50,7 @@ CREATE TABLE book
 -- Table: "user"
 CREATE TABLE "user"
 (
-    id         UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
+    id         Long PRIMARY KEY     DEFAULT gen_random_uuid(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     email      TEXT UNIQUE NOT NULL,
@@ -64,7 +64,7 @@ CREATE TYPE order_status AS ENUM ('ACTIVE', 'RETURNED', 'CANCELLED');
 -- Table: "order"
 CREATE TABLE "order"
 (
-    id          UUID PRIMARY KEY      DEFAULT gen_random_uuid(),
+    id          Long PRIMARY KEY      DEFAULT gen_random_uuid(),
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
     name        TEXT         NOT NULL,

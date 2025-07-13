@@ -9,43 +9,43 @@ import org.library.user.model.User;
 import org.library.order.enums.OrderStatus;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
-@Table( name = "\"order\"" )
+@Table( name = "\"ORDER\"" )
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Order {
   @Id
-  private UUID id;
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
   @CreationTimestamp
-  @Column( name = "created_at", nullable = false, updatable = false )
+  @Column( name = "CREATED_AT", nullable = false, updatable = false )
   private Instant createdAt;
 
   @UpdateTimestamp
-  @Column( name = "updated_at", nullable = false )
+  @Column( name = "UPDATED_AT", nullable = false )
   private Instant updatedAt;
 
   private String name;
 
-  @Column( name = "borrow_date", nullable = false )
+  @Column( name = "BORROW_DATE", nullable = false )
   private Instant borrowDate;
 
-  @Column( name = "return_date" )
+  @Column( name = "RETURN_DATE" )
   private Instant returnDate;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "status", nullable = false, columnDefinition = "order_status")
+  @Column(name = "STATUS", nullable = false, columnDefinition = "ORDER_STATUS")
   private OrderStatus status;
 
   @ManyToOne
-  @JoinColumn( name = "user_id" )
+  @JoinColumn(name = "USER_ID")
   private User user;
 
   @ManyToOne
-  @JoinColumn( name = "book_id" )
+  @JoinColumn(name = "BOOK_ID")
   private Book book;
 }

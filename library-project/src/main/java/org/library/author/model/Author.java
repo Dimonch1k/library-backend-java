@@ -7,36 +7,40 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.library.book.dto.BookResponseDto;
+import org.library.book.model.Book;
 
 import java.time.Instant;
-import java.util.UUID;
+import java.util.Set;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table( name = "author" )
+@Table( name = "AUTHOR" )
 public class Author {
   @Id
-  private UUID id;
+  @GeneratedValue( strategy = GenerationType.IDENTITY )
+  private Long id;
+
   @CreationTimestamp
-  @Column( name = "created_at", nullable = false, updatable = false )
+  @Column( name = "CREATED_AT", nullable = false, updatable = false )
   private Instant createdAt;
+
   @UpdateTimestamp
-  @Column( name = "updated_at", nullable = false )
+  @Column( name = "UPDATED_AT", nullable = false )
   private Instant updatedAt;
-  @Column( name = "first_name", nullable = false )
+
+  @Column( name = "FIRST_NAME", nullable = false )
   private String firstName;
-  @Column( name = "last_name", nullable = false )
+
+  @Column( name = "LAST_NAME", nullable = false )
   private String lastName;
-  @Column( nullable = false )
+
+  @Column( name = "AGE", nullable = false )
   private int age;
 
-  public Author ( UUID id, String firstName, String lastName, int age ) {
-    this.id = id;
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.age = age;
-  }
-};
+  @OneToMany( mappedBy = "author", fetch = FetchType.LAZY )
+  private Set<Book> books;
+}

@@ -88,20 +88,39 @@ public class SecurityConfig {
           "/api/v1/author/**"
         )
         .hasRole( Role.ADMIN.name() )
-        .requestMatchers(
-          HttpMethod.DELETE,
-          "/api/v1/order/**"
-        )
-        .hasRole( Role.ADMIN.name() )
+        // Admin-only order endpoints
         .requestMatchers(
           HttpMethod.GET,
           "/api/v1/order"
         )
         .hasRole( Role.ADMIN.name() )
         .requestMatchers(
-          "/api/v1/order/**",
-          "/api/v1/user/**"
+          HttpMethod.DELETE,
+          "/api/v1/order/**"
         )
+        .hasRole( Role.ADMIN.name() )
+        // Authenticated user order endpoints
+        .requestMatchers(
+          HttpMethod.POST,
+          "/api/v1/order/borrow/**"
+        )
+        .authenticated()
+        .requestMatchers(
+          HttpMethod.PATCH,
+          "/api/v1/order/return/**"
+        )
+        .authenticated()
+        .requestMatchers(
+          HttpMethod.PATCH,
+          "/api/v1/order/cancel/**"
+        )
+        .authenticated()
+        .requestMatchers(
+          HttpMethod.GET,
+          "/api/v1/order/my-orders/**"
+        )
+        .authenticated()
+        .requestMatchers( "/api/v1/user/**" )
         .authenticated()
         .anyRequest()
         .authenticated() )

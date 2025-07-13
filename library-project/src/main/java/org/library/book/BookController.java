@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping( "/api/v1/book" )
@@ -28,13 +27,13 @@ public class BookController {
   }
 
   @GetMapping( "/{id}" )
-  public ResponseEntity<BookResponseDto> getById ( @PathVariable UUID id ) {
+  public ResponseEntity<BookResponseDto> getById ( @PathVariable Long id ) {
     return ResponseEntity.ok( bookService.getById( id ) );
   }
 
   @PatchMapping( "/{id}" )
   public ResponseEntity<BookResponseDto> update (
-    @PathVariable UUID id, @RequestBody @Valid UpdateBookDto dto
+    @PathVariable Long id, @RequestBody @Valid UpdateBookDto dto
   ) {
     return ResponseEntity.ok( bookService.update(
       id,
@@ -43,7 +42,7 @@ public class BookController {
   }
 
   @DeleteMapping( "/{id}" )
-  public ResponseEntity<Void> delete ( @PathVariable UUID id ) {
+  public ResponseEntity<Void> delete ( @PathVariable Long id ) {
     bookService.delete( id );
     return ResponseEntity.ok().build();
   }

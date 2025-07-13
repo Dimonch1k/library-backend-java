@@ -2,6 +2,8 @@ package org.library.author;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.NotFound;
+import org.library.author.dto.AuthorDto;
 import org.library.author.dto.AuthorResponseDto;
 import org.library.author.dto.CreateAuthorDto;
 import org.library.author.dto.UpdateAuthorDto;
@@ -11,9 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -31,7 +31,6 @@ public class AuthorService {
 
     Author author = Author
       .builder()
-      .id( UUID.randomUUID() )
       .firstName( dto.getFirstName().trim() )
       .lastName( dto.getLastName().trim() )
       .age( dto.getAge() )
@@ -48,20 +47,39 @@ public class AuthorService {
   }
 
   public List<AuthorResponseDto> getAll () {
-    return authorRepository.findAll().stream().map( this::toResponseDto ).toList();
+    return authorRepository
+      .findAll()
+      .stream()
+      .map( this::toResponseDto )
+      .toList();
   }
 
-  public AuthorResponseDto getById ( UUID id ) {
-    Author author = authorRepository.findById( id ).orElseThrow( () -> new ResponseStatusException(
-      NOT_FOUND,
-      "Author not found with id: " + id
-    ) );
+  public AuthorResponseDto getById ( Long id ) {
+    Author author = authorRepository
+      .findById( id )
+      .orElseThrow( () -> new ResponseStatusException(
+        NOT_FOUND,
+        "Author not found with id: " + id
+      ) );
 
     return toResponseDto( author );
   }
 
+  public Author getFullById ( Long id ) {
+    Optional<Author> author = authorRepository.findById( id );
+
+    if ( !author.isPresent() ) {
+      throw new ResponseStatusException(
+        NOT_FOUND,
+        "Author not found with id: " + id
+      );
+    }
+
+    return author.get();
+  }
+
   @Transactional
-  public AuthorResponseDto update ( UUID id, UpdateAuthorDto dto ) {
+  public AuthorResponseDto update ( Long id, UpdateAuthorDto dto ) {
     Author author = getByIdInternal( id );
 
     if ( dto.getFirstName() != null ) {
@@ -87,7 +105,7 @@ public class AuthorService {
   }
 
   @Transactional
-  public void delete ( UUID id ) {
+  public void delete ( Long id ) {
     Author author = getByIdInternal( id );
 
     try {
@@ -100,11 +118,13 @@ public class AuthorService {
     }
   }
 
-  private Author getByIdInternal ( UUID id ) {
-    return authorRepository.findById( id ).orElseThrow( () -> new ResponseStatusException(
-      NOT_FOUND,
-      "Author not found with id: " + id
-    ) );
+  private Author getByIdInternal ( Long id ) {
+    return authorRepository
+      .findById( id )
+      .orElseThrow( () -> new ResponseStatusException(
+        NOT_FOUND,
+        "Author not found with id: " + id
+      ) );
   }
 
   private void checkAuthorDuplicate ( String firstName, String lastName ) {
@@ -119,6 +139,24 @@ public class AuthorService {
         "Author with the same name already exists"
       );
     }
+  }
+
+  public void checkAuthorExists ( Long id ) {
+    if ( !authorRepository.existsById( id ) ) {
+      throw new ResponseStatusException(
+        NOT_FOUND,
+        "Author not found with id: " + id
+      );
+    }
+  }
+
+  public AuthorDto toAuthorDto ( Author author ) {
+    return new AuthorDto(
+      author.getId(),
+      author.getFirstName(),
+      author.getLastName(),
+      author.getAge()
+    );
   }
 
   private AuthorResponseDto toResponseDto ( Author author ) {

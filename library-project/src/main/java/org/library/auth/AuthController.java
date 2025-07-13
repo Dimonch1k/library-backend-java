@@ -36,7 +36,7 @@ public class AuthController {
     authService.addRefreshTokenToResponse(
       response,
       authResponse.getUser().getId(),
-      authResponse.getUser().getRole().name()
+      authResponse.getUser().getRole()
     );
     return authResponse;
   }
@@ -50,7 +50,7 @@ public class AuthController {
     authService.addRefreshTokenToResponse(
       response,
       authResponse.getUser().getId(),
-      authResponse.getUser().getRole().name()
+      authResponse.getUser().getRole()
     );
     return authResponse;
   }

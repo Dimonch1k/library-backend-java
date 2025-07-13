@@ -5,7 +5,6 @@ import lombok.Data;
 
 @Data
 public class CreateBookDto {
-  
   @NotBlank( message = "Title is required" )
   @Size( min = 2, max = 50, message = "Title must be between 2 and 50 characters" )
   private String title;
@@ -21,6 +20,6 @@ public class CreateBookDto {
   @Max( value = 2025, message = "Year must be less than 2025" )
   private int year;
 
-  @NotBlank( message = "Author ID is required" )
-  private String authorId;
+  @NotNull( message = "Author ID is required" )
+  private Long authorId;
 }

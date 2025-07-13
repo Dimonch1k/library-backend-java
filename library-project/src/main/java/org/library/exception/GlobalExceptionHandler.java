@@ -38,7 +38,8 @@ public class GlobalExceptionHandler {
   public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException ex) {
     Map<String, Object> errorResponse = new HashMap<>();
     errorResponse.put("status", ex.getStatusCode().value());
-    errorResponse.put("error", ex.getReason() != null ? ex.getReason() : "An unexpected error occurred");
+    errorResponse.put("message", ex.getReason() != null ? ex.getReason() :
+                                 "An unexpected error occurred");
 
     return new ResponseEntity<>(errorResponse, ex.getStatusCode());
   }
@@ -47,7 +48,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<Map<String, Object>> handleException(Exception ex) {
     Map<String, Object> errorResponse = new HashMap<>();
     errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-    errorResponse.put("error", ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
+    errorResponse.put("message", ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
 
     return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
   }

@@ -18,5 +18,5 @@ public class UpdateBookDto {
   @Max( value = 2025, message = "Year must be less than 2025" )
   private Integer year;
 
-  private String authorId;
+  private Long authorId;
 }

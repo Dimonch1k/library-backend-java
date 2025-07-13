@@ -7,12 +7,11 @@ import org.library.user.dto.UserResponseDto;
 import org.library.order.enums.OrderStatus;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 public class OrderResponseDto {
-  private UUID id;
+  private Long id;
   private String name;
   private Instant borrowDate;
   private Instant returnDate;

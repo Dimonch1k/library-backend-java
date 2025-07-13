@@ -1,12 +1,13 @@
 package org.library.order;
 
 import lombok.RequiredArgsConstructor;
+import org.library.auth.annotations.CurrentUser;
 import org.library.order.dto.OrderResponseDto;
+import org.library.user.dto.UserResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping( "/api/v1/order" )
@@ -14,24 +15,24 @@ import java.util.UUID;
 public class OrderController {
   private final OrderService orderService;
 
-  @PostMapping( "/borrow/{bookId}/user/{userId}" )
+  @PostMapping( "/borrow/{bookId}" )
   @ResponseStatus( HttpStatus.OK )
-  public void borrowBook ( @PathVariable UUID userId, @PathVariable UUID bookId ) {
+  public void borrowBook ( @CurrentUser UserResponseDto currentUser, @PathVariable Long bookId ) {
     orderService.borrowBook(
-      userId,
+      currentUser.getId(),
       bookId
     );
   }
 
   @PatchMapping( "/return/{orderId}" )
   @ResponseStatus( HttpStatus.OK )
-  public void returnBook ( @PathVariable UUID orderId ) {
+  public void returnBook ( @PathVariable Long orderId ) {
     orderService.returnBook( orderId );
   }
 
   @PatchMapping( "/cancel/{orderId}" )
   @ResponseStatus( HttpStatus.OK )
-  public void cancelOrder ( @PathVariable UUID orderId ) {
+  public void cancelOrder ( @PathVariable Long orderId ) {
     orderService.cancelOrder( orderId );
   }
 
@@ -40,14 +41,14 @@ public class OrderController {
     return orderService.getAllOrders();
   }
 
-  @GetMapping( "/my-orders/user/{userId}" )
-  public List<OrderResponseDto> getOrdersByUser ( @PathVariable UUID userId ) {
-    return orderService.getOrdersByUserId( userId );
+  @GetMapping( "/my-orders" )
+  public List<OrderResponseDto> getOrdersByUser ( @CurrentUser UserResponseDto currentUser ) {
+    return orderService.getOrdersByUserId( currentUser.getId() );
   }
 
   @DeleteMapping( "/{orderId}" )
   @ResponseStatus( HttpStatus.OK )
-  public void deleteOrder ( @PathVariable UUID orderId ) {
+  public void deleteOrder ( @PathVariable Long orderId ) {
     orderService.deleteOrder( orderId );
   }
 }

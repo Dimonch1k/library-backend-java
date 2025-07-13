@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -28,7 +27,7 @@ public class JwtService {
     return Keys.hmacShaKeyFor( secret.getBytes() );
   }
 
-  public String generateAccessToken ( UUID userId, String role ) {
+  public String generateAccessToken ( Long userId, String role ) {
     return generateToken(
       userId,
       role,
@@ -36,7 +35,7 @@ public class JwtService {
     );
   }
 
-  public String generateRefreshToken ( UUID userId, String role ) {
+  public String generateRefreshToken ( Long userId, String role ) {
     return generateToken(
       userId,
       role,
@@ -44,7 +43,7 @@ public class JwtService {
     );
   }
 
-  private String generateToken ( UUID userId, String role, long expiration ) {
+  private String generateToken ( Long userId, String role, long expiration ) {
     return Jwts
       .builder()
       .setSubject( userId.toString() )
@@ -61,8 +60,8 @@ public class JwtService {
       .compact();
   }
 
-  public UUID extractUserId ( String token ) {
-    return UUID.fromString( extractClaim(
+  public Long extractUserId ( String token ) {
+    return Long.parseLong( extractClaim(
       token,
       Claims::getSubject
     ) );
@@ -90,7 +89,6 @@ public class JwtService {
     return claimsResolver.apply( claims );
   }
 
-  // Fixed method using the new API
   private Claims extractAllClaims ( String token ) {
     return Jwts.parser().setSigningKey( getSigningKey() ).build().parseClaimsJws( token ).getBody();
   }
@@ -99,8 +97,8 @@ public class JwtService {
     return extractExpiration( token ).before( new Date() );
   }
 
-  public Boolean validateToken ( String token, UUID userId ) {
-    final UUID tokenUserId = extractUserId( token );
+  public Boolean validateToken ( String token, Long userId ) {
+    final Long tokenUserId = extractUserId( token );
     return ( tokenUserId.equals( userId ) && !isTokenExpired( token ) );
   }
 }

@@ -12,9 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.swing.text.html.Option;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -33,10 +31,9 @@ public class UserService {
 
     User user = User
       .builder()
-      .id( UUID.randomUUID() )
       .email( dto.getEmail().trim() )
       .password( dto.getPassword() )
-      .role( Role.USER )
+      .role( Role.USER.toString() )
       .build();
 
     try {
@@ -49,7 +46,7 @@ public class UserService {
     }
   }
 
-  public UserResponseDto getProfile ( UUID id ) {
+  public UserResponseDto getProfile ( Long id ) {
     User user = userRepository.findById( id ).orElseThrow( () -> new ResponseStatusException(
       NOT_FOUND,
       "Such user doesn't exist"
@@ -58,7 +55,7 @@ public class UserService {
   }
 
   @Transactional
-  public UserResponseDto update ( UUID id, UpdateUserDto dto ) {
+  public UserResponseDto update ( Long id, UpdateUserDto dto ) {
     User user = userRepository.findById( id ).orElseThrow( () -> new ResponseStatusException(
       NOT_FOUND,
       "User not found"
@@ -76,7 +73,7 @@ public class UserService {
     return toResponseDto( userRepository.save( user ) );
   }
 
-  public void checkUserExists ( UUID userId ) {
+  public void checkUserExists ( Long userId ) {
     if ( !userRepository.existsById( userId ) ) {
       throw new ResponseStatusException(
         NOT_FOUND,
@@ -85,7 +82,7 @@ public class UserService {
     }
   }
 
-  public UserResponseDto getById ( UUID id ) {
+  public UserResponseDto getById ( Long id ) {
     User user = userRepository.findById( id ).orElseThrow( () -> new ResponseStatusException(
       NOT_FOUND,
       "User not found with id: " + id
@@ -117,7 +114,7 @@ public class UserService {
     if ( userRepository.findByEmail( email ).isPresent() ) {
       throw new ResponseStatusException(
         CONFLICT,
-        "User with the email" + email + " already exists"
+        "User with the email " + email + " already exists"
       );
     }
   }
@@ -126,7 +123,7 @@ public class UserService {
     return new UserResponseDto(
       user.getId(),
       user.getEmail(),
-      user.getRole()
+      user.getRole().toString()
     );
   }
 }

@@ -17,7 +17,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -33,7 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     final String authHeader = request.getHeader( "Authorization" );
     final String jwt;
-    final UUID userId;
+    final Long userId;
 
     if ( authHeader == null || !authHeader.startsWith( "Bearer " ) ) {
       filterChain.doFilter(
@@ -49,14 +48,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       userId = jwtService.extractUserId( jwt );
 
       if ( userId != null && SecurityContextHolder.getContext().getAuthentication() == null ) {
-        UserResponseDto user = userService.getById( userId );
+        UserResponseDto user;
+        try {
+          user = userService.getById( userId );
+        } catch ( Exception e ) {
+          filterChain.doFilter(
+            request,
+            response
+          );
+          return;
+        }
 
         if ( jwtService.validateToken(
           jwt,
           userId
         ) ) {
           List<SimpleGrantedAuthority> authorities = List.of( new SimpleGrantedAuthority(
-            "ROLE_" + user.getRole().name() ) );
+            "ROLE_" + user.getRole() ) );
 
           UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
             user,
@@ -68,7 +76,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
       }
     } catch ( Exception e ) {
-      // Token is invalid, continue without authentication
       logger.error(
         "Error during token validation",
         e

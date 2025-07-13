@@ -7,10 +7,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.library.auth.enums.Role;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
-@Table( name = "\"user\"" )
+@Table(name = "\"USER\"")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,22 +17,24 @@ import java.util.UUID;
 public class User {
 
   @Id
-  private UUID id;
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "ID")
+  private Long id;
 
   @CreationTimestamp
-  @Column( name = "created_at", nullable = false, updatable = false )
+  @Column(name = "CREATED_AT", nullable = false, updatable = false)
   private Instant createdAt;
 
   @UpdateTimestamp
-  @Column( name = "updated_at", nullable = false )
+  @Column(name = "UPDATED_AT", nullable = false)
   private Instant updatedAt;
 
-  @Column( nullable = false, unique = true )
+  @Column(name = "EMAIL", nullable = false, unique = true)
   private String email;
 
-  @Column( nullable = false )
+  @Column(name = "PASSWORD", nullable = false)
   private String password;
 
-  @Column( nullable = false )
-  private Role role;
+  @Column(name = "ROLE", nullable = false)
+  private String role;
 }

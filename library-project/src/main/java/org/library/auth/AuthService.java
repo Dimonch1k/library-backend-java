@@ -3,6 +3,7 @@ package org.library.auth;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.library.auth.dto.AuthResponseDto;
 import org.library.auth.dto.LoginDto;
 import org.library.auth.dto.RegisterDto;
@@ -17,12 +18,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.*;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class AuthService {
 
   private final UserService userService;
@@ -42,7 +43,7 @@ public class AuthService {
 
     String accessToken = jwtService.generateAccessToken(
       user.getId(),
-      user.getRole().name()
+      user.getRole()
     );
 
     return new AuthResponseDto(
@@ -56,7 +57,7 @@ public class AuthService {
 
     String accessToken = jwtService.generateAccessToken(
       user.getId(),
-      user.getRole().name()
+      user.getRole()
     );
 
     return new AuthResponseDto(
@@ -67,7 +68,7 @@ public class AuthService {
 
   public TokenResponseDto refreshToken ( String refreshToken ) {
     try {
-      UUID userId = jwtService.extractUserId( refreshToken );
+      Long userId = jwtService.extractUserId( refreshToken );
       String role = jwtService.extractRole( refreshToken );
 
       if ( jwtService.isTokenExpired( refreshToken ) ) {
@@ -84,7 +85,6 @@ public class AuthService {
         role
       );
       return new TokenResponseDto( newAccessToken );
-
     } catch ( Exception e ) {
       throw new ResponseStatusException(
         UNAUTHORIZED,
@@ -93,7 +93,9 @@ public class AuthService {
     }
   }
 
-  public void addRefreshTokenToResponse ( HttpServletResponse response, UUID userId, String role ) {
+  public void addRefreshTokenToResponse (
+    HttpServletResponse response, Long userId, String role
+  ) {
     String refreshToken = jwtService.generateRefreshToken(
       userId,
       role
@@ -134,7 +136,7 @@ public class AuthService {
 
   public boolean isValidToken ( String token ) {
     try {
-      UUID userId = jwtService.extractUserId( token );
+      Long userId = jwtService.extractUserId( token );
       return !jwtService.isTokenExpired( token ) && userId != null;
     } catch ( Exception e ) {
       return false;
@@ -160,7 +162,8 @@ public class AuthService {
       throw new ResponseStatusException(
         BAD_REQUEST,
         "Invalid credentials"
-      );    }
+      );
+    }
 
     return userService.toResponseDto( fullUser );
   }

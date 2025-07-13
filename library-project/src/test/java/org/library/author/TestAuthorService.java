@@ -15,9 +15,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class TestAuthorService {
+
   private AuthorService authorService;
+
   @Mock
   private AuthorRepository authorRepository;
+
   private AutoCloseable autoCloseable;
 
   @BeforeEach
@@ -45,14 +48,13 @@ public class TestAuthorService {
 
     when( authorRepository.save( any( Author.class ) ) ).thenAnswer( invocation -> {
       Author a = invocation.getArgument( 0 );
-      a.setId( UUID.randomUUID() );
+      a.setId( 1L );
       return a;
     } );
 
     AuthorResponseDto created = authorService.create( createDto );
 
     assertNotNull( created.getId() );
-
     assertEquals(
       "Dmytro",
       created.getFirstName()
@@ -65,7 +67,6 @@ public class TestAuthorService {
       25,
       created.getAge()
     );
-    assertNotNull( created.getId() );
   }
 
   @Test
@@ -82,9 +83,7 @@ public class TestAuthorService {
 
     ResponseStatusException ex = assertThrows(
       ResponseStatusException.class,
-      () -> {
-        authorService.create( dto );
-      }
+      () -> authorService.create( dto )
     );
 
     assertEquals(
@@ -97,14 +96,14 @@ public class TestAuthorService {
   @Test
   public void testGetAll_ReturnsList () {
     List<Author> authors = List.of(
-      this.buildAuthor(
-        UUID.randomUUID(),
+      buildAuthor(
+        1L,
         "A",
         "B",
         20
       ),
-      this.buildAuthor(
-        UUID.randomUUID(),
+      buildAuthor(
+        2L,
         "C",
         "D",
         30
@@ -122,8 +121,8 @@ public class TestAuthorService {
 
   @Test
   public void testGetById_Success () {
-    UUID id = UUID.randomUUID();
-    Author author = this.buildAuthor(
+    Long id = new Random().nextLong();
+    Author author = buildAuthor(
       id,
       "A",
       "B",
@@ -146,15 +145,13 @@ public class TestAuthorService {
 
   @Test
   public void testGetById_NotFound () {
-    UUID id = UUID.randomUUID();
+    Long id = new Random().nextLong();
 
     when( authorRepository.findById( id ) ).thenReturn( Optional.empty() );
 
     ResponseStatusException ex = assertThrows(
       ResponseStatusException.class,
-      () -> {
-        authorService.getById( id );
-      }
+      () -> authorService.getById( id )
     );
 
     assertEquals(
@@ -166,8 +163,8 @@ public class TestAuthorService {
 
   @Test
   public void testUpdate_Success () {
-    UUID id = UUID.randomUUID();
-    Author author = this.buildAuthor(
+    Long id = new Random().nextLong();
+    Author author = buildAuthor(
       id,
       "Old",
       "Name",
@@ -202,7 +199,7 @@ public class TestAuthorService {
 
   @Test
   public void testUpdate_NotFound () {
-    UUID id = UUID.randomUUID();
+    Long id = new Random().nextLong();
     UpdateAuthorDto dto = new UpdateAuthorDto();
     dto.setFirstName( "Test" );
 
@@ -219,8 +216,8 @@ public class TestAuthorService {
 
   @Test
   public void testDelete_Success () {
-    UUID id = UUID.randomUUID();
-    Author author = this.buildAuthor(
+    Long id = new Random().nextLong();
+    Author author = buildAuthor(
       id,
       "A",
       "B",
@@ -239,7 +236,7 @@ public class TestAuthorService {
 
   @Test
   public void testDelete_NotFound () {
-    UUID id = UUID.randomUUID();
+    Long id = new Random().nextLong();
 
     when( authorRepository.findById( id ) ).thenReturn( Optional.empty() );
 
@@ -260,6 +257,7 @@ public class TestAuthorService {
       any(),
       any()
     ) ).thenReturn( Optional.empty() );
+
     when( authorRepository.save( any() ) ).thenThrow( new DataIntegrityViolationException( "" ) );
 
     ResponseStatusException ex = assertThrows(
@@ -278,8 +276,14 @@ public class TestAuthorService {
   }
 
   private Author buildAuthor (
-    UUID id, String firstName, String lastName, int age
+    Long id, String firstName, String lastName, int age
   ) {
-    return Author.builder().id( id ).firstName( firstName ).lastName( lastName ).age( age ).build();
+    return Author
+      .builder()
+      .id( id )
+      .firstName( firstName )
+      .lastName( lastName )
+      .age( age )
+      .build();
   }
 }

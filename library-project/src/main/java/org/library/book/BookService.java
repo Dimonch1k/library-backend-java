@@ -3,16 +3,19 @@ package org.library.book;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.library.author.AuthorService;
+import org.library.author.dto.AuthorDto;
+import org.library.author.model.Author;
 import org.library.book.dto.BookResponseDto;
 import org.library.book.dto.CreateBookDto;
 import org.library.book.dto.UpdateBookDto;
 import org.library.book.model.Book;
+import org.library.order.enums.OrderStatus;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -26,18 +29,17 @@ public class BookService {
   public BookResponseDto create ( CreateBookDto dto ) {
     checkBookDuplicate( dto.getTitle().trim() );
 
-    authorService.getById( UUID.fromString( dto.getAuthorId() ) );
+    Author author = authorService.getFullById( dto.getAuthorId() );
 
     Book book = Book
       .builder()
-      .id( UUID.randomUUID() )
       .title( dto.getTitle().trim() )
-      .description( dto.getDescription() != null
-                    ? dto.getDescription().trim()
-                    : null )
+      .description(
+        dto.getDescription() != null ? dto.getDescription().trim() : null )
       .genre( dto.getGenre().trim() )
       .year( dto.getYear() )
-      .authorId( UUID.fromString( dto.getAuthorId() ) )
+      .author( author )
+      .status( null )
       .build();
 
     try {
@@ -45,25 +47,34 @@ public class BookService {
     } catch ( DataIntegrityViolationException e ) {
       throw new ResponseStatusException(
         BAD_REQUEST,
-        "Failed to create book"
+        "Failed to create book",
+        e
       );
     }
   }
 
+  @Transactional
   public List<BookResponseDto> getAll () {
-    return bookRepository.findAll().stream().map( this::toResponseDto ).toList();
+    return bookRepository
+      .findAll()
+      .stream()
+      .map( this::toResponseDto )
+      .toList();
   }
 
-  public BookResponseDto getById ( UUID id ) {
-    Book book = bookRepository.findById( id ).orElseThrow( () -> new ResponseStatusException(
-      NOT_FOUND,
-      "Book not found with id: " + id
-    ) );
+  @Transactional
+  public BookResponseDto getById ( Long id ) {
+    Book book = bookRepository
+      .findById( id )
+      .orElseThrow( () -> new ResponseStatusException(
+        NOT_FOUND,
+        "Book not found with id: " + id
+      ) );
     return toResponseDto( book );
   }
 
   @Transactional
-  public BookResponseDto update ( UUID id, UpdateBookDto dto ) {
+  public BookResponseDto update ( Long id, UpdateBookDto dto ) {
     Book book = getByIdInternal( id );
 
     if ( dto.getTitle() != null ) {
@@ -79,8 +90,8 @@ public class BookService {
       book.setYear( dto.getYear() );
     }
     if ( dto.getAuthorId() != null ) {
-      authorService.getById( UUID.fromString( dto.getAuthorId() ) );
-      book.setAuthorId( UUID.fromString( dto.getAuthorId() ) );
+      Author author = authorService.getFullById( dto.getAuthorId() );
+      book.setAuthor( author );
     }
 
     try {
@@ -94,7 +105,7 @@ public class BookService {
   }
 
   @Transactional
-  public void delete ( UUID id ) {
+  public void delete ( Long id ) {
     Book book = getByIdInternal( id );
     try {
       bookRepository.delete( book );
@@ -106,11 +117,29 @@ public class BookService {
     }
   }
 
-  private Book getByIdInternal ( UUID id ) {
-    return bookRepository.findById( id ).orElseThrow( () -> new ResponseStatusException(
-      NOT_FOUND,
-      "Book not found with id: " + id
-    ) );
+  @Transactional
+  public void updateStatus(Long id, OrderStatus bookStatus) {
+    Book book = getByIdInternal(id);
+    book.setStatus(bookStatus);
+
+    try {
+      bookRepository.save(book);
+    } catch (DataIntegrityViolationException e) {
+      throw new ResponseStatusException(
+        BAD_REQUEST,
+        "Failed to update book status"
+      );
+    }
+  }
+
+
+  private Book getByIdInternal ( Long id ) {
+    return bookRepository
+      .findById( id )
+      .orElseThrow( () -> new ResponseStatusException(
+        NOT_FOUND,
+        "Book not found with id: " + id
+      ) );
   }
 
   private void checkBookDuplicate ( String title ) {
@@ -122,8 +151,8 @@ public class BookService {
     }
   }
 
-  public void checkBookExists(UUID bookId) {
-    if (!bookRepository.existsById(bookId)) {
+  public void checkBookExists ( Long bookId ) {
+    if ( !bookRepository.existsById( bookId ) ) {
       throw new ResponseStatusException(
         NOT_FOUND,
         "Book not found with id: " + bookId
@@ -138,7 +167,8 @@ public class BookService {
       book.getDescription(),
       book.getGenre(),
       book.getYear(),
-      book.getAuthorId()
+      book.getStatus(),
+      authorService.toAuthorDto( book.getAuthor() )
     );
   }
 }
